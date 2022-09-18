@@ -1,0 +1,22 @@
+import "hashes/sha256/512bit" as sha256;
+
+def ensure(u32[2][8] r, u32[8] k) -> bool {
+    bool mut out = false;
+
+    for u32 i in 0..2 {
+        out = r[i] == k;
+    }
+    
+    return out;
+}
+
+def main(private u32[16] i, private u32[16] j) -> (u32[8], u32[8]) {
+    u32[8] h_c_i = sha256(i[0..8], i[8..16]);
+    u32[8] h_c_j = sha256(j[0..8], j[8..16]);
+    u32[8] h_c = sha256(h_c_i, h_c_j);
+
+//    assert(h_c_i == n);
+//    assert(h_c == k);
+//    assert(ensure(r, k));
+    return (h_c_i, h_c);
+}

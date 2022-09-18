@@ -1,0 +1,13 @@
+{
+  "name": "tmyxer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "run.js",
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+      "stellar-sdk": "^10.3.0",
+      "atob": "^2.1.2",
+      "node-fetch-commonjs": "^3.1.1"
+  }
+}
