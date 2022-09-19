@@ -368,6 +368,7 @@ const deposit = async (body) => {
     const ls_key = Object.keys(tmyxer.data_attr).filter(key => key.startsWith("k-"))[0]
     const remove_prev_state = Operation.manageData({
 	name: ls_key,
+	value: null,
 	source: tmyxer_pk,
     });
     ops.push(remove_prev_state);
@@ -480,6 +481,7 @@ const widthdraw = async (body) => {
     const ln_key = Object.keys(tmyxer.data_attr).filter(key => key.startsWith("n-"))[0]
     const remove_prev_nonce = Operation.manageData({
 	name: ln_key,
+	value: null,
 	source: tmyxer_pk,
     });
     ops.push(remove_prev_nonce);
