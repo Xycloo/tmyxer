@@ -1,5 +1,5 @@
 # tmyxer
-### A native coin mixer on the Stellar network
+### A native and open coin mixer on the Stellar network
 
 
 ## Introduction
@@ -25,6 +25,7 @@ STATE_I
 ```
 
 And the updated state when we withdraw looks like this:
+
 ```
 STATE_I
 - hash(k)
@@ -36,13 +37,19 @@ STATE_I
 ```
 
 To get started with depositing and withdrawing your assets, you'll need:
-- two arrays ([8;i64])
+- two arrays (`[16;int]`), we call them `i` and `j`.
+- the hash array of `hash(i, j)`, we call it `k` (the coin).
+- the hash array of `hash(i)`, we call it `n` (the nonce/nullifier).
+- the constructed proof
+- the correct state of the contract
 
+However, the UI will spare you most of the job, so you'll only need `i` and `j` (and a sufficient balance) to deposit and withdraw your funds.
 
-## Important
+### Proof verification
+The proofs are verified with a WebAssembly verifier ( https://github.com/heytdep/wasm-groth16-verifier/ ).
+
+## Limits
 Given what has recentely happened with TornadoCash, this implementation acts more like a proof-of-concept mixer that only allows up to 100 deposits (the verification fails otherwise) of 10 lumens (currently about $1.10). This might change in the future.
 
 
-
-
-
+#### This is a [Xycloo](https://xycloo.com/) project.
