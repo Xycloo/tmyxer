@@ -365,6 +365,20 @@ const deposit = async (body) => {
 
     ops.push(change_state);
 
+    const ls_key = Object.keys(tmyxer.data_attr).filter(key => key.startsWith("k-"))[0]
+    const remove_prev_state = Operation.manageData({
+	name: ls_key,
+	source: tmyxer_pk,
+    });
+    ops.push(remove_prev_state);
+
+    const latest_state = Operation.manageData({
+	name: `k-${k.slice(0,4)}`,
+	value: `${k.slice(4,8)}`,
+	source: tmyxer_pk,
+    });
+    ops.push(latest_state);
+
     const deposit = Operation.payment({
 	destination: tmyxer_pk,
 	asset: Asset.native(),
@@ -462,6 +476,21 @@ const widthdraw = async (body) => {
     });
 
     ops.push(change_nonces);
+
+    const ln_key = Object.keys(tmyxer.data_attr).filter(key => key.startsWith("n-"))[0]
+    const remove_prev_nonce = Operation.manageData({
+	name: ln_key,
+	source: tmyxer_pk,
+    });
+    ops.push(remove_prev_nonce);
+
+    const latest_nonce = Operation.manageData({
+	name: `n-${n.slice(0,4)}`,
+	value: `${n.slice(4,8)}`,
+	source: tmyxer_pk,
+    });
+    ops.push(latest_nonce);
+
 
     const xfer = Operation.payment({
 	destination: to,
