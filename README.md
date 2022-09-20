@@ -1,6 +1,6 @@
 # tmyxer
 ### A native open source coin mixer on the Stellar network
-
+#### [currently only on TESTNET]
 
 ## Introduction
 Coin mixers allow its users to anonymize the provenance of the coins in their balance. This is possible thanks to Zero Knowledge proofs, which allow a prover to prove the validity of their inputs without actually revealing them.
