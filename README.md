@@ -59,7 +59,7 @@ Given what has recentely happened with TornadoCash, this implementation acts mor
 
 
 # Guide
-We will provide a user-friendly interface soon, in the meantime, if you'd like to test the mixer out below here there are some "raw" instructions to make deposits and withdrawals.
+We will provide a user-friendly interface soon which will allow users to deposit and withdraw funds easily. In the meantime, if you'd like to test the mixer out below here there are some "raw" instructions to make deposits and withdrawals.
 
 ## Deposit
 In order to make a deposit, you'll have to invoke the function thorugh an HTTP request, which will return a signed XDR you'll have to sign and submit as long as there is no invalid input.
@@ -79,7 +79,7 @@ To invoke the contract, you'll have to make a POST request to `https://faas-fra1
 }
 ```
 
-To obtain the current hash root state, you can query horizon for manageData operations that start with `k-` ( https://github.com/Xycloo/tmyxer/blob/main/function/packages/tmyxer/run/run.js#L376 ), and build a bidimensional array (i.e `[[latest_k-2], [latest_k-1], [latest_k]]`). The hash array (`hash(i, h)`) can be obtained with the following JS snippet from https://github.com/Xycloo/tmyxer/blob/main/dev/build_invokation.js#L103 :
+To obtain the current hash root state, you can query horizon for manageData operations that start with `k-` ( https://github.com/Xycloo/tmyxer/blob/main/function/packages/tmyxer/run/run.js#L376 , https://github.com/Xycloo/tmyxer/blob/main/function/packages/tmyxer/run/run.js#L368), and build a bidimensional array (i.e `[[latest_k-2], [latest_k-1], [latest_k]]`). The hash array (`hash(i, h)`) can be obtained with the following JS snippet (after installing `zokrates-js` with `npm install zokrates-js`) from https://github.com/Xycloo/tmyxer/blob/main/dev/build_invokation.js#L103 :
 
 ```javascript
 const { initialize } = require('zokrates-js')
