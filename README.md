@@ -1,5 +1,5 @@
 # tmyxer
-### A native and open coin mixer on the Stellar network
+### A native open source coin mixer on the Stellar network
 
 
 ## Introduction
