@@ -46,7 +46,13 @@ To get started with depositing and withdrawing your assets, you'll need:
 However, the UI will spare you most of the job, so you'll only need `i` and `j` (and a sufficient balance) to deposit and withdraw your funds.
 
 ### Proof verification
-The proofs are verified with a WebAssembly verifier ( https://github.com/heytdep/wasm-groth16-verifier/ ).
+The proofs are verified with a WebAssembly verifier ( https://github.com/heytdep/wasm-groth16-verifier/ ). The verifier implements the groth16 verification algorithm over BLS_12_377 curves and verifies the following equation:
+
+
+$(P_a \times P_b) \times (L_i \times (−VK_{\gamma})) \times (P_c \times (−VK_{\delta})) = VK_{\alpha} \times VK_{\beta}$
+
+Where  $(A \times B)$ is the pairing for $A$ and $B$, which is computed using the miller loop algorithm, which is the most optimized way of computing a bilinear and non-degenerate elliptic curve pairing. ( https://heytdep.github.io/comp_posts/4)--priv)--Personal-notes-on-Elliptic-curve-pairings/post.html#computing-pairings-with-miller's-algorithm )
+
 
 ## Limits
 Given what has recentely happened with TornadoCash, this implementation acts more like a proof-of-concept mixer that only allows up to 100 deposits (the verification fails otherwise) of 10 lumens (currently about $1.10). This might change in the future.
@@ -106,6 +112,46 @@ def main(private u32[16] i, private u32[16] j) -> (u32[8], u32[8]) {
 ```
 
 ## Withdraw
+To withdraw your funds, make a POST request to the same `https://faas-fra1-afec6ce7.doserverless.co/api/v1/web/fn-b81001b9-80a5-4365-90f5-0ea933d10589/tmyxer/run` contract invokation endpoint with the following JSON body:
 
+```json
+{
+  "action": "widthdraw",
+  "timebounds": {
+    "minTime": min_ts,
+    "maxTime": max_ts
+  },
+  "fee": fee,
+  "to": user_receiving_the_funds,
+  "n_list": list_of_used_nonces,
+  proof
+]
+```
+
+To build the proof, you can use the `build_proof()` function defined [here](https://github.com/Xycloo/tmyxer/blob/main/dev/build_invokation.js#L52).
+Here's an example:
+
+```javascript
+
+async function test() {
+	// the same i, j secrets we used to compute the hash of the coin we deposited
+    const i = ["01", "01", "01", "01", "01", "01", "01", "01", "01", "01", "01", "01", "01", "01", "01", "01"];
+    const j = ["11", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10"];
+
+    const hashes = await build_hash(i, j);
+    const k = JSON.parse(hashes)[0];
+    const n = JSON.parse(hashes)[1];
+
+	// root consists of all the deposited coins (k), including the one we are verifying | must have a fixed length of 100. 
+    const root = [["0xe661230c","0xe97a637d","0xa4568cad","0xc3c16f82","0xf1734751","0x0d7fcd56","0x53e8941f","0x4e1762de"],["0x06f6e530","0x9ca863bc","0x67af3041","0x85cfbdb3","0x5e960a2b","0x9757fa27","0xfc075d00","0x80dbb1c8"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0x2cf46708","0x3e53cdde","0xbb50f4b8","0x05fc19f3","0xf4560223","0xa6ea2dd7","0x6218bbfe","0xaa2add4a"]]
+
+    const proof = await build_proof(i, j, k, n, root);
+    console.log(proof);
+}
+```
+
+## Full anonymity
+Thanks to our ZK-proofs, there is indeed no way to bind a withdrawal to a deposit, your funds will be withdrawn in full anonymity. However, you might reveal information about your identity, if you withdraw for example, immediately after having deposited, an observer will assume that the one who deposited and the one who withdraws are indeed the same entity.
+Also, you may not be completely anonymous if you don't hide your IP address when invoking the contract (DigitalOcean can track your address).
 
 #### This is a [Xycloo](https://xycloo.com/) project.
