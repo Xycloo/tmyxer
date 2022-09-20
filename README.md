@@ -1,7 +1,7 @@
 # tmyxer
-### A native open source coin mixer on the Stellar network, also available on Radicle)
-Also available on [radicle](https://app.radicle.xyz/seeds/pine.radicle.garden/rad:git:hnrkp5jgfxwxrffjsp148fyzdc457pa9ja38y/tree)
+### A native open source coin mixer on the Stellar network.
 
+Also available on [radicle](https://app.radicle.xyz/seeds/pine.radicle.garden/rad:git:hnrkp5jgfxwxrffjsp148fyzdc457pa9ja38y/tree)
 [currently only on TESTNET] 
 
 
