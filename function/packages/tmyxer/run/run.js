@@ -383,7 +383,7 @@ const deposit = async (body) => {
     const deposit = Operation.payment({
 	destination: tmyxer_pk,
 	asset: Asset.native(),
-	amount: "10",
+	amount: "100",
 	source: from,
     });
 
@@ -497,7 +497,7 @@ const widthdraw = async (body) => {
     const xfer = Operation.payment({
 	destination: to,
 	asset: Asset.native(),
-	amount: "9.99",
+	amount: "99.999",
 	source: tmyxer_pk,
     });
 

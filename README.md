@@ -20,7 +20,7 @@ STATE_I
 - hash(n)                   | where n is the list of used nonces
 - latest_k = I_k            | where latest_k is the previously deposited coin 
 - latest_n                  | where latest_n is the previously deposited nonce
-- balance += 10XLM 
+- balance += 100XLM 
 ...                         | all the other state changes that occurr to an account after a new tx
 ```
 
@@ -32,7 +32,7 @@ STATE_I
 - hash(n) = hash(n + I_n)   | where I_n is the nonce we are using for the withdrawal
 - latest_k
 - latest_n = I_n
-- balance -= (10 - fee)XLM 
+- balance -= (100 - fee)XLM 
 ...
 ```
 
@@ -55,7 +55,7 @@ Where  $(A \times B)$ is the pairing for $A$ and $B$, which is computed using th
 
 
 ## Limits
-Given what has recentely happened with TornadoCash, this implementation acts more like a proof-of-concept mixer that only allows up to 100 deposits (the verification fails otherwise) of 10 lumens (currently about $1.10). This might change in the future.
+Given what has recentely happened with TornadoCash, this implementation acts more like a proof-of-concept mixer that only allows up to 100 deposits (the verification fails otherwise) of 100 lumens (currently about $10.10). This might change in the future.
 
 
 # Guide
