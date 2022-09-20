@@ -52,4 +52,60 @@ The proofs are verified with a WebAssembly verifier ( https://github.com/heytdep
 Given what has recentely happened with TornadoCash, this implementation acts more like a proof-of-concept mixer that only allows up to 100 deposits (the verification fails otherwise) of 10 lumens (currently about $1.10). This might change in the future.
 
 
+# Guide
+We will provide a user-friendly interface soon, in the meantime, if you'd like to test the mixer out below here there are some "raw" instructions to make deposits and withdrawals.
+
+## Deposit
+In order to make a deposit, you'll have to invoke the function thorugh an HTTP request, which will return a signed XDR you'll have to sign and submit as long as there is no invalid input.
+To invoke the contract, you'll have to make a POST request to `https://faas-fra1-afec6ce7.doserverless.co/api/v1/web/fn-b81001b9-80a5-4365-90f5-0ea933d10589/tmyxer/run`, with the following JSON body:
+
+```json
+{
+  "action": "deposit",
+  "timebounds": {
+    "minTime": min_ts,
+    "maxTime": max_ts
+  },
+  "fee": fee,
+  "from": user_who_is_depositing,
+  "r": [current_hash_root_state],
+  "k": [hash(i, j)]
+}
+```
+
+To obtain the current hash root state, you can query horizon for manageData operations that start with `k-` ( https://github.com/Xycloo/tmyxer/blob/main/function/packages/tmyxer/run/run.js#L376 ), and build a bidimensional array (i.e `[[latest_k-2], [latest_k-1], [latest_k]]`). The hash array (`hash(i, h)`) can be obtained with the following JS snippet from https://github.com/Xycloo/tmyxer/blob/main/dev/build_invokation.js#L103 :
+
+```javascript
+const { initialize } = require('zokrates-js')
+
+async function build_hash(i, j) {
+    const defaultProvider = await initialize();
+    let zokratesProvider = defaultProvider.withOptions({ 
+        backend: "ark",
+        curve: "bls12_377",
+        scheme: "g16"
+    });
+    const code = `
+import "hashes/sha256/512bit" as sha256;
+def main(private u32[16] i, private u32[16] j) -> (u32[8], u32[8]) {
+    u32[8] h_c_i = sha256(i[0..8], i[8..16]);
+    u32[8] h_c_j = sha256(j[0..8], j[8..16]);
+    u32[8] h_c = sha256(h_c_i, h_c_j);
+    return (h_c, h_c_i);
+}
+    `;
+    
+    const artifacts = await zokratesProvider.compile(code);
+    const { witness, output } = await zokratesProvider.computeWitness(artifacts, [
+	i,
+	j
+    ]);
+    
+    return output
+}
+```
+
+## Withdraw
+
+
 #### This is a [Xycloo](https://xycloo.com/) project.
