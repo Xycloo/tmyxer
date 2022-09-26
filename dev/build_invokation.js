@@ -1,14 +1,72 @@
 const { initialize } = require('zokrates-js')
 const fs = require('fs');
 const BigNumber = require('bignumber.js');
+const {Server} = require("stellar-sdk");
+var fetch = require("node-fetch");
+
+const server = new Server("https://horizon-testnet.stellar.org");
+
+
+const get_inputs = async () => {
+    let ops = [];
+    let endpoint = "https://horizon-testnet.stellar.org/accounts/GAJVV7RYJA2SAQAJV4NHJMJF7ZUFXV5QJGIZD4LICWUTPE2T2VTZ7VN2/operations?limit=200&order=desc&include_failed=false";
+    while (true) {
+        let response = await fetch(endpoint);
+        let res = await response.json();
+        if (res._embedded.records.length == 0) {
+            break
+        } else {
+            for (let n=0; n < res._embedded.records.length; n++) {
+                ops.push(res._embedded.records[n])
+            }
+            endpoint = res._links.next.href
+        }
+    }
+    
+    let nonces = [];
+    let states = []
+    
+    for (let i=0; i < ops.length; i++) {
+        if (ops[i].type == "manage_data" && ops[i].name.startsWith("k-")) {
+	    if (ops[i].name.split("-")[1] == "[") {
+		continue
+	    } else {
+		states.push(JSON.parse(`[${ops[i].name.split("-")[1]}, ${atob(ops[i].value)}]`))
+	    }
+        }
+        
+        if (ops[i].type == "manage_data" && ops[i].name.startsWith("n-")) {
+	    if (ops[i].name.split("-")[1] == "[") {
+		continue
+	    } else {
+		nonces.push(JSON.parse(`[${ops[i].name.split("-")[1]}, ${atob(ops[i].value)}]`))
+	    }
+        }
+    }
+
+    return {
+	"nonces": nonces,
+	"states": states
+    }
+}
+
 
 function getDecimal(hex) {
-        hex = hex.replace("0x",""); 
-		hex = hex.replace("0X","");
-		const x = new BigNumber(hex, 16);
-		
-        return x.toString(10);
+    hex = hex.replace("0x",""); 
+    hex = hex.replace("0X","");
+    const x = new BigNumber(hex, 16);
+    
+    return x.toString(10);
+}
+
+function arrToDecimal(arr) {
+    let arr_out = [];
+    for (let i=0; i< arr.length; i++) {
+	arr_out.push(getDecimal(arr[i]))
     }
+    
+    return arr_out
+}
     
 
 const proofParseInto = (obj) => {
@@ -132,13 +190,26 @@ def main(private u32[16] i, private u32[16] j) -> (u32[8], u32[8]) {
 
 
 async function test() {
-    const i = ["01", "01", "01", "01", "01", "01", "01", "01", "01", "01", "01", "01", "01", "01", "01", "01"];
-    const j = ["11", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10"];
+    const i = ["1", "01", "01", "01", "1", "01", "01", "01", "01", "01", "01", "01", "01", "01", "01", "01"];
+    const j = ["0", "10", "10", "10", "0", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10"];
 
     const hashes = await build_hash(i, j);
     const k = JSON.parse(hashes)[0];
     const n = JSON.parse(hashes)[1];
 
+    let {nonces, states} = await get_inputs();
+    
+    const states_len = states.length;
+
+    for (let n = 0; i < states_len; n++) {}
+    
+    for (let i = 0; i < 99 - states_len; i++) {
+	states.push(["0","0","0","0","0","0","0","0"])
+    }
+//    states.push(k);
+
+    console.log(JSON.stringify(states[1]));
+    /*
     const root = [
 	// all previous coins
 	["0xe661230c","0xe97a637d","0xa4568cad","0xc3c16f82","0xf1734751","0x0d7fcd56","0x53e8941f","0x4e1762de"],
@@ -225,11 +296,62 @@ async function test() {
 	["0","0","0","0","0","0","0","0"],
 	["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],["0","0","0","0","0","0","0","0"],
 	["0x2cf46708","0x3e53cdde","0xbb50f4b8","0x05fc19f3","0xf4560223","0xa6ea2dd7","0x6218bbfe","0xaa2add4a"] // coin we are verifiying
-    ]
+	]
+	*/
 
-    const proof = await build_proof(i, j, k, n, root);
-    console.log(proof);
+    //    const proof = await build_proof(i, j, k, n, states);
+    let r = states.filter(state => JSON.stringify(state) != "[\"0\",\"0\",\"0\",\"0\",\"0\",\"0\",\"0\",\"0\"]");
+
+    const from = "GCHSWYTYMIWYZXBQPMHRBPSXI3D4JFSZZSNA64R4M75ICJCZXZHI5UIT";
+    const out = `{
+"action": "deposit",
+  "timebounds": {
+    "minTime": "1663002743",
+    "maxTime": "1693004054"
+  },
+"fee": "5000",
+"from": ${from},
+"k": ${JSON.stringify(arrToDecimal(k))},
+"r": ${JSON.stringify(r)}
+}`
+    console.log(out);
 }
 
+//test();
 
-test();
+async function deposit() {
+    const i = ["1", "01", "01", "01", "1", "01", "01", "01", "01", "01", "01", "01", "01", "01", "01", "01"];
+    const j = ["0", "10", "10", "10", "0", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10"];
+
+    const hashes = await build_hash(i, j);
+    const k = JSON.parse(hashes)[0];
+    const n = JSON.parse(hashes)[1];
+
+    let {nonces, states} = await get_inputs();
+    
+    const states_len = states.length;
+
+    for (let n = 0; i < states_len; n++) {}
+    
+    for (let i = 0; i < 99 - states_len; i++) {
+	states.push(["0","0","0","0","0","0","0","0"])
+    }
+    let r = states.filter(state => JSON.stringify(state) != "[\"0\",\"0\",\"0\",\"0\",\"0\",\"0\",\"0\",\"0\"]");
+
+    const from = "GCHSWYTYMIWYZXBQPMHRBPSXI3D4JFSZZSNA64R4M75ICJCZXZHI5UIT";
+    const out = `
+{
+  "action": "deposit",
+    "timebounds": {
+      "minTime": "1663002743",
+      "maxTime": "1693004054"
+    },
+  "fee": "5000",
+  "from": ${from},
+  "k": ${JSON.stringify(arrToDecimal(k))},
+  "r": ${JSON.stringify(r)}
+}`
+    console.log(out);
+}
+
+deposit();
