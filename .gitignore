@@ -1,1 +1,3 @@
-project.yml.gitsigners
+project.yml
+.gitsigners
+node_modules

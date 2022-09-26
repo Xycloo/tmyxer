@@ -3,13 +3,14 @@ const fs = require('fs');
 const BigNumber = require('bignumber.js');
 const {Server} = require("stellar-sdk");
 var fetch = require("node-fetch");
+const atob = require("atob");
 
 const server = new Server("https://horizon-testnet.stellar.org");
 
 
 const get_inputs = async () => {
     let ops = [];
-    let endpoint = "https://horizon-testnet.stellar.org/accounts/GAJVV7RYJA2SAQAJV4NHJMJF7ZUFXV5QJGIZD4LICWUTPE2T2VTZ7VN2/operations?limit=200&order=desc&include_failed=false";
+    let endpoint = "https://horizon-testnet.stellar.org/accounts/GDVPTP2V4ORSOMXCVMXULGELBCDIHV23FIX5G3EFKGLERJVRNPPXXNGV/operations?limit=200&order=asc&include_failed=false";
     while (true) {
         let response = await fetch(endpoint);
         let res = await response.json();
@@ -28,9 +29,10 @@ const get_inputs = async () => {
     
     for (let i=0; i < ops.length; i++) {
         if (ops[i].type == "manage_data" && ops[i].name.startsWith("k-")) {
-	    if (ops[i].name.split("-")[1] == "[") {
+	    if (ops[i].name.split("-")[1] == "[" || ops[i].value == "") {
 		continue
 	    } else {
+//		console.log(`${i}: [${ops[i].name.split("-")[1]}, ${atob(ops[i].value)}] ${atob(ops[i].value)}`)
 		states.push(JSON.parse(`[${ops[i].name.split("-")[1]}, ${atob(ops[i].value)}]`))
 	    }
         }
@@ -87,13 +89,7 @@ const proofParseInto = (obj) => {
         pub_i.push(`"${getDecimal(n)}"`)
     }
     
-    let out = `
-p_a: ["${a_0}", "${a_1}"],
-p_b: ["${b_0}", "${b_1}", "${b_2}", "${b_3}"],
-p_c: ["${c_0}", "${c_1}"],
-pub_i: [${pub_i}]
-
-`
+    let out = `"p_a": ["${a_0}", "${a_1}"], "p_b": ["${b_0}", "${b_1}", "${b_2}", "${b_3}"], "p_c": ["${c_0}", "${c_1}"], "pub_i": [${pub_i}]`
     
     return out
 }
@@ -319,9 +315,9 @@ async function test() {
 
 //test();
 
-async function deposit() {
-    const i = ["1", "01", "01", "01", "1", "01", "01", "01", "01", "01", "01", "01", "01", "01", "01", "01"];
-    const j = ["0", "10", "10", "10", "0", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10"];
+async function deposit(i, j, from) {
+//    const i = ["1", "01", "01", "01", "1", "01", "01", "01", "01", "01", "01", "01", "01", "01", "01", "01"];
+//    const j = ["0", "10", "10", "10", "0", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10"];
 
     const hashes = await build_hash(i, j);
     const k = JSON.parse(hashes)[0];
@@ -338,20 +334,96 @@ async function deposit() {
     }
     let r = states.filter(state => JSON.stringify(state) != "[\"0\",\"0\",\"0\",\"0\",\"0\",\"0\",\"0\",\"0\"]");
 
-    const from = "GCHSWYTYMIWYZXBQPMHRBPSXI3D4JFSZZSNA64R4M75ICJCZXZHI5UIT";
     const out = `
-{
+Deposit details: \n
+* i (keep it secret!): ${i}
+* j (keep it secret!): ${j}
+* k (coin, public): ${k}
+* n (nullifier, public after withdrawing): ${n}
+`
+    const body = `{
   "action": "deposit",
     "timebounds": {
       "minTime": "1663002743",
       "maxTime": "1693004054"
     },
   "fee": "5000",
-  "from": ${from},
+  "from": "${from}",
   "k": ${JSON.stringify(arrToDecimal(k))},
   "r": ${JSON.stringify(r)}
 }`
     console.log(out);
+
+    return body
 }
 
-deposit();
+
+async function test_deposit() {
+
+    console.log("[+] Building deposit invokation")
+    
+    const i = ["1", "01", "01", "01", "1", "01", "01", "01", "01", "01", "01", "01", "01", "01", "01", "01"];
+    const j = ["0", "10", "10", "10", "0", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10"];
+    const from = "GCHSWYTYMIWYZXBQPMHRBPSXI3D4JFSZZSNA64R4M75ICJCZXZHI5UIT";
+
+    const body = await deposit(i, j, from);
+    console.log(body);
+}
+
+async function test1_deposit() {
+
+    console.log("[+] Building deposit invokation")
+    
+    const i = ["1", "11", "01", "01", "1", "01", "01", "01", "01", "01", "01", "01", "01", "01", "01", "01"];
+    const j = ["0", "11", "10", "10", "0", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10"];
+    const from = "GBX2BWJ6LZI34KEBYVCQW27RPXX6LILODTJBOA7C43OUY4GI2YMA4KZD";
+
+    const body = await deposit(i, j, from);
+    console.log(body);
+}
+
+
+
+//test_deposit();
+//test1_deposit();
+
+async function withdraw(i, j, to) {
+    let {nonces, states} = await get_inputs();
+
+    const hashes = await build_hash(i, j);
+    const k = JSON.parse(hashes)[0];
+    const n = JSON.parse(hashes)[1];
+    
+    const states_len = states.length;
+
+    for (let n = 0; n < states_len; n++) {
+	for (let i = 0; i < states[n].length; i++) {
+	    states[n][i] = `0x${states[n][i].toString(16)}`
+	}
+    }
+    
+    for (let i = 0; i < 100 - states_len; i++) {
+	states.push(["0","0","0","0","0","0","0","0"])
+    }
+    
+    const proof = await build_proof(i, j, k, n, states);
+    let r = states.filter(state => JSON.stringify(state) != "[\"0\",\"0\",\"0\",\"0\",\"0\",\"0\",\"0\",\"0\"]");
+
+    const out = `
+{"action": "widthdraw", "timebounds": { "minTime": "0", "maxTime": "1683004054"}, "fee": "5000", "to": "${to}", "n_list": ${JSON.stringify(nonces)},${proof}}`
+    console.log(out);
+    return out
+}
+
+async function test_withdraw() {
+
+    console.log("[+] Building withdraw invokation")
+
+    const i = ["1", "01", "01", "01", "1", "01", "01", "01", "01", "01", "01", "01", "01", "01", "01", "01"];
+    const j = ["0", "10", "10", "10", "0", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10", "10"];
+    const to = "GDF4QYITSKDTY3VY4US6CTML26YI6RPTTKGCITD6AFQKSFNT2L4XH36R";
+    
+    await withdraw(i, j, to);
+}
+
+test_withdraw()

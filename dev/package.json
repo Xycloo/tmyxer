@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "atob": "^2.1.2",
+    "bignumber": "^1.1.0",
+    "bignumber.js": "^9.1.0",
+    "stellar-sdk": "^10.3.0",
+    "zokrates-js": "^1.1.3"
+  }
+}
