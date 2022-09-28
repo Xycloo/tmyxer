@@ -69,7 +69,10 @@ function arrToDecimal(arr) {
     
     return arr_out
 }
-    
+
+function getRandom() {
+    return Math.floor(Math.random() * 4294967295)
+}
 
 const proofParseInto = (obj) => {
     let a_0 = getDecimal(obj.proof.a[0]);
@@ -426,4 +429,5 @@ async function test_withdraw() {
     await withdraw(i, j, to);
 }
 
-test_withdraw()
+//test_withdraw()
+
