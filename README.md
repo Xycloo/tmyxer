@@ -10,6 +10,20 @@ Coin mixers allow its users to anonymize the provenance of the coins in their ba
 
 Tmyxer (with the "t" before since it was initially intended to run on Stellar Turrets, and still follows some of their design principles) is a reference implementation of a coin mixer that uses the groth16 verifier algorithm to verify proofs and allow users to anonimize their withdrawals.
 
+## Instructions
+### Deposit
+1. Clone the repo, and naigate to the `./tmyxer/dev` directory.
+2. run: `node invoke.js deposit PUBLIC_KEY`, where you have to substitute `PUBLIC_KEY` with a valid public key of an existing Stellar account.
+3. After about 30s (be patient!) you'll receive:
+- `deposit details`, which you have to store somewhere safe since they are the only way of withdrawing your funds.
+- a JSON-formatted invokation body, to be entered in [the web interface](https://tmyxer.xycloo.com/), You'll receive as output an xdr to be signed with PUBLIC_KEY's secret key, and then submitted to the network.
+
+### Withdraw
+2. run: `node invoke.js withdraw I J PUBLIC_KEY`, where you have to substitute `I` and `J` with the `i` and `j` strings in your deposit details (in the form `'[n, n, n]'`), and `PUBLIC_KEY` with a valid public key of an existing Stellar account.
+3. After about 40s/60s (be patient, generating the proof takes some time) you'll receive:
+- a JSON-formatted invokation body, to be entered in [the web interface](https://tmyxer.xycloo.com/). You'll receive as output an xdr to be submitted to the network (testnet).
+
+
 ## Specification
 The mixer is designed to store the least possible amount of data, and leverages the fact that provided inputs aren't actually in the form of transactions (aren't stored) to only store a hash for both nonces (nullifiers) and contract states and match them agains the hashed inputs to verify their validity. For example, when withdrawing, users have to provide the list of used nonces `[n_1, n_2, n_3, n_4]` which is then hashed and matched against the hash stored on-chain. This allows us to store a small amount of data without needing to implement things like merkle proofs or caluk.
 

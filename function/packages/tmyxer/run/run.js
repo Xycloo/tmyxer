@@ -345,7 +345,7 @@ const deposit = async (body) => {
 	
     console.log(body);
 	
-    if (hr_arr.length == 0) {
+    if (hr_arr.length == 0 && hr == "2914") {
     } else {
 	if (hr != hash(hr_arr.toString())) {
 	    return "invalid hash root"

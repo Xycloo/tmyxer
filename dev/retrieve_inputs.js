@@ -1,4 +1,4 @@
-const {Keypair, Server} = require("stellar-sdk");
+const {Server} = require("stellar-sdk");
 const atob = require("atob");
 var fetch = require("node-fetch");
 
@@ -6,7 +6,7 @@ const server = new Server("https://horizon-testnet.stellar.org");
 
 const main = async () => {
     let ops = [];
-    let endpoint = "https://horizon-testnet.stellar.org/accounts/GC4GJ453JPQ63PJIUKTXTIHCPMAVL27ZLXRMK2ZNLQ5UAHMZOMGXGT67/operations?limit=200&order=desc&include_failed=false";
+    let endpoint = "https://horizon-testnet.stellar.org/accounts/GAJVV7RYJA2SAQAJV4NHJMJF7ZUFXV5QJGIZD4LICWUTPE2T2VTZ7VN2/operations?limit=200&order=desc&include_failed=false";
     while (true) {
         let response = await fetch(endpoint);
         let res = await response.json();
@@ -25,11 +25,19 @@ const main = async () => {
     
     for (let i=0; i < ops.length; i++) {
         if (ops[i].type == "manage_data" && ops[i].name.startsWith("k-")) {
-            states.push(`[${ops[i].name.split("-")[1]} ${atob(ops[i].value)}]`)
+	    if (ops[i].name.split("-")[1] == "[") {
+		continue
+	    } else {
+		states.push(JSON.parse(`[${ops[i].name.split("-")[1]}, ${atob(ops[i].value)}]`))
+	    }
         }
         
         if (ops[i].type == "manage_data" && ops[i].name.startsWith("n-")) {
-            nonces.push(`[${ops[i].name.split("-")[1]} ${atob(ops[i].value)}]`)
+	    if (ops[i].name.split("-")[1] == "[") {
+		continue
+	    } else {
+		nonces.push(JSON.parse(`[${ops[i].name.split("-")[1]}, ${atob(ops[i].value)}]`))
+	    }
         }
     }
 
