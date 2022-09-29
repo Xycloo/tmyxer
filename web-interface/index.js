@@ -1,10 +1,4 @@
-const simpleSignerUrl = 'https://sign.plutodao.finance';
-
-
-window.addEventListener("onSign", (e) => {
-    console.log(e.message.signedXDR)
-})
-
+const simpleSignerUrl = 'https://sign-test.plutodao.finance';
 
 async function invoke() {
     const invokation_body = document.getElementById("invokation").value;
@@ -21,34 +15,14 @@ async function invoke() {
 	.then(response => response.json())
 	.then(result => {
 	    const unsignedXdr = result.xdr;
-	    let tx = StellarSdk.TransactionBuilder.fromXDR(unsignedXdr, "Test SDF Network ; September 2015");
-	    let server = new StellarSdk.Server("https://horizon-testnet.stellar.org");
 
+	    document.getElementById("xdr-out").innerText = unsignedXdr;
+	    document.getElementById("xdr-wrap").style.background = "#dcdcdc";
+	    
 	    if (JSON.parse(invokation_body).action == "deposit") {
-		const signWindow = window.open(
-		    `${simpleSignerUrl}/sign?xdr=${unsignedXdr}`,
-		    'Sign_Window',
-		    'width=360, height=700',
-                );
-                window.addEventListener('message', (e) => {
-		    if (e.origin !== simpleSignerUrl) {
-                        return;
-		    } else if (e.data.type == "onSign") {
-			const signedXdr =  e.data.message.signedXDR;
-			console.log("test");
-			console.log(signedXdr)
-
-			const transaction =
-			      StellarSdk.TransactionBuilder.fromXDR(
-				  signedXdr,
-				  'Test SDF Network ; September 2015', //remember to update this to the correct value
-			      );
-
-			server.submitTransaction(transaction).then(resp => resp.text()).then(out => console.log(out))
-		    }
-                });
+		document.getElementById("xdr-descr").innerText = "Sign this xdr with your wallet and submit it to the network:";
 	    } else {
-		server.submitTransaction(tx).then(resp => resp.text()).then(out => console.log(out))
+		document.getElementById("xdr-descr").innerText = "Submit this xdr to the network:";
 	    }
 	})
 	.catch(error => console.log('error', error));

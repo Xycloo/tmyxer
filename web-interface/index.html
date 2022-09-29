@@ -18,12 +18,22 @@
 	<div class="inner">
 	  <div id="content">
 	    <h1>TMyxer portal.</h1>
-	    <p>Follow <a href="https://github.com/Xycloo/tmyxer/" target="_blank">the instructions</a> to generate the invokation.</p>
+	    <div id="social">
+	      <p>Discuss tmyxer on <a href="https://discord.gg/w7fBhSS34Q">Discord</a>.</p>
+	      <p>Check out tmyxer on <a href="https://github.com/Xycloo/tmyxer">Github</a>.</p>
+	    </div>
+	    <br/>
+	    <p>TMyxer is an experiment from <a href="https://xycloo.com">Xycloo</a> which aims to leverage zk-SNARKs to mix deposited coins. When you deposit and withdraw assets on TMyxer, no one (including us and the service running the serverless function) will know where your withdrawed funds came from (unless you don't follow the <a href="https://github.com/Xycloo/tmyxer#full-anonymity">total anonimity</a> guide). However, given what happened with TornadoCash, this is currently only a proof of concept project that supports a maximum of 100 deposits (of only about 10$).</p>
+	    <p>Follow <a href="https://github.com/Xycloo/tmyxer#instructions" target="_blank">the instructions</a> to generate the invokation.</p>
 	    <br/>
 	    <br/>
 	    <textarea id="invokation" placeholder="invokation body"></textarea>
 	    <br/>
 	    <button onclick="invoke()">invoke</button>
+	    <br/>
+	    <br/>
+	    <p id="xdr-descr"></p>
+	    <pre id="xdr-wrap"><code id="xdr-out"></code></pre>
 	  </div>
 	</div>
       </div>
